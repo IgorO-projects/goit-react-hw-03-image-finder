@@ -22,13 +22,14 @@ class App extends Component {
   };
 
   componentDidUpdate(prevProps, prevState) {
+
     if(prevState.searchQuery !== this.state.searchQuery) {
       this.fetchHits();
-    }
+    };
   }
 
   onChangeQuery = query => {
-    // this.setState({ searchQuery: query }, this.fetchHits());
+
     this.setState({ 
       hits: [],
       searchQuery: query,
@@ -38,6 +39,7 @@ class App extends Component {
   }
 
   onScroll = () => {
+
     window.scrollTo({
       top: document.documentElement.scrollHeight,
       behavior: 'smooth',
@@ -45,12 +47,41 @@ class App extends Component {
   }
 
   toggleModal = () => {
+
     this.setState(prevState => ({
       showModal: !prevState.showModal,
     }))
   }
 
   fetchHits = () => {
+    const { searchQuery, currentPage } = this.state;
+    const options = { searchQuery, currentPage };
+
+    this.setState({ isLoading: true });
+
+    ServiceApi.fetchHits(options)
+    .then(response => {
+      this.setState(prevState => ({
+        hits: [...response.data.hits],
+        currentPage: prevState.currentPage + 1,
+      }));
+      
+      // this.onScroll();
+    })
+    .catch(()=> Pnotify.error({title: 'something went wrong :('}))
+    .finally(()=> this.setState({ isLoading: false }));
+  }
+
+  onImageClick = (event) => {
+
+    this.setState({ 
+      modalSrc: event.target.dataset.source,
+      modalAlt: event.target.alt,
+      showModal: true
+    });
+  }
+
+  onLoadMoreClick = () => {
     const { searchQuery, currentPage } = this.state;
     const options = { searchQuery, currentPage };
 
@@ -68,14 +99,7 @@ class App extends Component {
     .catch(()=> Pnotify.error({title: 'something went wrong :('}))
     .finally(()=> this.setState({ isLoading: false }));
   }
-
-  onImageClick = (event) => {
-    this.setState({ 
-      modalSrc: event.target.dataset.source,
-      modalAlt: event.target.alt,
-      showModal: true
-    });
-  }
+  
   render() {
     const { hits, isLoading, showModal, modalSrc, modalAlt } = this.state;
     return (
@@ -85,7 +109,7 @@ class App extends Component {
         hits={hits}
         onClick={this.onImageClick} />
         {isLoading && <Loading />}
-        {hits.length !== 0 && !isLoading && (<Button onClick={this.fetchHits}/>)}
+        {hits.length !== 0 && !isLoading && (<Button onClick={this.onLoadMoreClick}/>)}
         {showModal && <Modal 
         src={modalSrc}
         alt={modalAlt}

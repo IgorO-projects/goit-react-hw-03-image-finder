@@ -7,9 +7,9 @@ const Loading = () => {
         <div className={styles.loading}>
             <Loader 
             type="Grid"
-            color="#00BFFF"
-            height={80}
-            width={80}
+            color="#3f51b5"
+            height={60}
+            width={60}
             />
         </div>
     )
